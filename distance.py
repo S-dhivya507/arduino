@@ -1,62 +1,56 @@
-#define echoPin 3 
-#define trigPin 2 
-long duration; 
-int distance; 
 const int buzzer = 8;
-const int light = 13;
-const int light2 = 12;
+const int redLED = 9;
+const int blueLED = 10;
+const int echoPin = 11;
+const int trigPin = 12;
 
 void setup() {
   pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT); 
-  pinMode(buzzer, OUTPUT); 
-  pinMode(light, OUTPUT);
-  pinMode(light2, OUTPUT);
-  Serial.begin(9600); 
+  pinMode(echoPin, INPUT);
+  pinMode(blueLED, OUTPUT);
+  pinMode(redLED, OUTPUT);
+  pinMode(buzzer, OUTPUT);
 
-  Serial.println("Annamalai University BE CSE 2022");
-  Serial.println("Distance Measure Program");
+  Serial.begin(9600);
+  Serial.println("Distance Measurement Ready");
 }
 
 void loop() {
-  // Trigger the ultrasonic pulse
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
 
-  // Measure the echo time
-  duration = pulseIn(echoPin, HIGH);
+  long duration = pulseIn(echoPin, HIGH, 30000);
+  int distance = duration * 0.034 / 2;
 
-  // Convert time to distance
-  distance = duration * 0.034 / 2;
+  if (duration == 0) {
+    Serial.println("Out of range");
+    digitalWrite(blueLED, LOW);
+    digitalWrite(redLED, LOW);
+    noTone(buzzer);
+  } else {
+    Serial.print("Distance: ");
+    Serial.print(distance);
+    Serial.println(" cm");
 
-  // Display distance
-  Serial.print("Distance: ");
-  Serial.print(distance);
-  Serial.println(" cm");
+    digitalWrite(blueLED, LOW);
+    digitalWrite(redLED, LOW);
+    noTone(buzzer);
 
-  // Default: LEDs off
-  digitalWrite(light, LOW);
-  digitalWrite(light2, LOW);
-  noTone(buzzer);
-
-  // Decision logic
-  if (distance <= 10) {
-    Serial.println("Very Close");
-    digitalWrite(light, HIGH);
-    tone(buzzer, 1000);
-    delay(500);
+    if (distance <= 10) {
+      Serial.println("VERY CLOSE!");
+      digitalWrite(blueLED, HIGH);
+      tone(buzzer, 1000);
+      delay(500);
+      noTone(buzzer);
+    } else if (distance <= 50) {
+      Serial.println("NEAR RANGE");
+      digitalWrite(redLED, HIGH);
+    } else {
+      Serial.println("FAR RANGE");
+    }
   }
-  else if (distance > 10 && distance <= 50) {
-    Serial.println("Near Range");
-    digitalWrite(light2, HIGH);
-    delay(500);
-  }
-  else {
-    Serial.println("Far Range");
-  }
-
-  delay(500); // small delay for stable reading
+  delay(100);
 }
